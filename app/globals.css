@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   BRAND TOKENS — pulled from the Bella's Takoyaki logo.
+   brand-600 is the logo red; accent-500 is the gold of the "BELLA'S" letters.
+   Change these two scales and the whole site re-skins.
+   ======================================================================== */
+@theme {
+  --color-brand-50: #fff1f1;
+  --color-brand-100: #ffdfdf;
+  --color-brand-200: #ffc5c5;
+  --color-brand-300: #ff9d9d;
+  --color-brand-400: #f96565;
+  --color-brand-500: #e93a3a;
+  --color-brand-600: #d21f1f;
+  --color-brand-700: #af1515;
+  --color-brand-800: #911616;
+  --color-brand-900: #7a1919;
+  --color-brand-950: #430808;
+
+  --color-accent-300: #ffe27a;
+  --color-accent-400: #ffd34d;
+  --color-accent-500: #f7c325;
+  --color-accent-600: #dda600;
+
+  --color-ink: #17110f;
+  --color-cream: #fff8f1;
+
+  --font-display: var(--font-fredoka), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --animate-marquee: marquee 38s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes badge-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.45);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ===========================================================================
+   BASE
+   ======================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  /* Anchor targets must clear the sticky header. */
+  section[id],
+  div[id] {
+    scroll-margin-top: 6rem;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Every tap target clears 44px. */
+  button,
+  a[role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+/* ===========================================================================
+   UTILITIES
+   ======================================================================== */
+@utility marquee-track {
+  display: flex;
+  width: max-content;
+  animation: var(--animate-marquee);
+}
+
+@utility badge-pop {
+  animation: badge-pop 420ms ease-out;
+}
+
+/* Hide scrollbars on the horizontal tab strip without losing scrollability. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.marquee-pause:hover .marquee-track,
+.marquee-pause:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .marquee-track {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
