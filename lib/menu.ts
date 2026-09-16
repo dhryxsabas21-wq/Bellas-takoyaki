@@ -321,13 +321,33 @@ export function startingPrice(item: MenuItem): number {
 }
 
 /** Names that scroll past in the marquee strip. */
-export const MARQUEE_WORDS: string[] = Array.from(
-  new Set(ALL_ITEMS.filter((i) => i.available).map((i) => i.name))
-);
+export function marqueeWords(menu: Category[] = MENU): string[] {
+  return Array.from(
+    new Set(
+      menu
+        .flatMap((c) => c.items)
+        .filter((i) => i.available)
+        .map((i) => i.name)
+    )
+  );
+}
+
+export type MenuStats = {
+  takoyakiFlavors: number;
+  startingPrice: number;
+  biggestTray: string;
+};
 
 /** Hero stat blocks, computed so they can never drift from the menu. */
-export const MENU_STATS = {
-  takoyakiFlavors: MENU[0].items.length,
-  startingPrice: Math.min(...ALL_ITEMS.map(startingPrice)),
-  biggestTray: "16 pcs",
-};
+export function computeStats(menu: Category[] = MENU): MenuStats {
+  const items = menu.flatMap((c) => c.items);
+  return {
+    takoyakiFlavors: menu[0]?.items.length ?? 0,
+    startingPrice: items.length ? Math.min(...items.map(startingPrice)) : 0,
+    biggestTray: "16 pcs",
+  };
+}
+
+/** Static defaults, used before any Supabase overrides are applied. */
+export const MARQUEE_WORDS: string[] = marqueeWords(MENU);
+export const MENU_STATS: MenuStats = computeStats(MENU);

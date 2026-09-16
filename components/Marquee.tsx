@@ -5,8 +5,9 @@ import { MARQUEE_WORDS } from "@/lib/menu";
  * track by -50% lands exactly on the start of the second copy — a seamless
  * loop. Pauses on hover/focus; frozen entirely under prefers-reduced-motion.
  */
-export default function Marquee() {
-  const words = [...MARQUEE_WORDS, ...MARQUEE_WORDS];
+export default function Marquee({ words: live }: { words?: string[] }) {
+  const source = live?.length ? live : MARQUEE_WORDS;
+  const words = [...source, ...source];
 
   return (
     <div

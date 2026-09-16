@@ -1,19 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
 import FoodImage from "./FoodImage";
 import { BUSINESS, HAS_WHATSAPP, isUnset, MESSENGER_URL } from "@/lib/business";
 import { peso } from "@/lib/format";
-import { MENU_STATS } from "@/lib/menu";
+import { MENU_STATS, type MenuStats } from "@/lib/menu";
 import { useUI } from "@/lib/ui";
 
 /**
  * Rules-based FAQ — no AI call. Edit the answers here; they read from the
  * business config and menu so they can't go stale.
  */
-const FAQ: { q: string; a: string }[] = [
+type FaqEntry = { q: string; a: string };
+
+function buildFaq(stats: MenuStats): FaqEntry[] {
+  return [
   {
     q: "What time are you open?",
     a: isUnset(BUSINESS.hours.display)
@@ -29,9 +32,9 @@ const FAQ: { q: string; a: string }[] = [
   {
     q: "How much is takoyaki?",
     a: `Takoyaki starts at ${peso(
-      MENU_STATS.startingPrice
-    )} for 5 pieces, up to ${MENU_STATS.biggestTray} trays for the barkada. ${
-      MENU_STATS.takoyakiFlavors
+      stats.startingPrice
+    )} for 5 pieces, up to ${stats.biggestTray} trays for the barkada. ${
+      stats.takoyakiFlavors
     } flavours to pick from — full prices are in the menu above.`,
   },
   {
@@ -46,11 +49,12 @@ const FAQ: { q: string; a: string }[] = [
       isUnset(BUSINESS.gcash.accountName) ? "" : `, ${BUSINESS.gcash.accountName}`
     }) or cash on pickup. We confirm your total in the chat before you send anything.`,
   },
-  {
-    q: "What's your bestseller?",
-    a: "Pork Cheesebomb, Ikura Seafood and Baby Tako — those three also make up the San-Yaki skewer flavours. The Chili Bomb is for the brave.",
-  },
-];
+    {
+      q: "What's your bestseller?",
+      a: "Pork Cheesebomb, Ikura Seafood and Baby Tako — those three also make up the San-Yaki skewer flavours. The Chili Bomb is for the brave.",
+    },
+  ];
+}
 
 type Message = { from: "bot" | "user"; text: string };
 
@@ -59,12 +63,13 @@ const GREETING: Message = {
   text: `Hi! I'm Bella's little helper 🐙 Tap a question below, or chat with a real human on Messenger.`,
 };
 
-export default function ChatWidget() {
+export default function ChatWidget({ stats }: { stats?: MenuStats }) {
   const chatOpen = useUI((s) => s.chatOpen);
   const openChat = useUI((s) => s.openChat);
   const closeChat = useUI((s) => s.closeChat);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const logRef = useRef<HTMLDivElement>(null);
+  const FAQ = useMemo(() => buildFaq(stats ?? MENU_STATS), [stats]);
 
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
@@ -77,7 +82,7 @@ export default function ChatWidget() {
     return () => document.removeEventListener("keydown", onKey);
   }, [chatOpen, closeChat]);
 
-  function ask(entry: (typeof FAQ)[number]) {
+  function ask(entry: FaqEntry) {
     setMessages((m) => [
       ...m,
       { from: "user", text: entry.q },

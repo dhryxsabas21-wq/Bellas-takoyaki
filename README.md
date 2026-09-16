@@ -225,9 +225,16 @@ components/
   Toaster.tsx       toasts + manual-copy fallback
   FoodImage.tsx     next/image with a branded fallback
   Reveal.tsx        scroll-reveal wrapper
+  admin/            staff menu admin (Phase 2)
+  login/            staff sign-in
+middleware.ts       protects /admin
+supabase/
+  schema.sql        run this once in the Supabase SQL editor
 lib/
   business.ts       ← your contact details, links and feature flags
   menu.ts           ← your menu, single source of truth
+  menu-server.ts    merges Supabase overrides onto menu.ts, with fallback
+  supabase/         Supabase clients (browser, server, config)
   cart.ts           Zustand cart store
   ui.ts             Zustand UI store (drawer, modal, toasts)
   order.ts          order message + checkout handlers
@@ -238,9 +245,85 @@ public/images/      your photos
 
 ---
 
-## Phase 2 (not built yet)
+## 7. Staff admin (Phase 2) — optional
 
-Staff admin so you can toggle availability without editing code: Supabase auth,
-a `/admin` table with availability toggles and editable prices, public menu
-reading from Supabase with `revalidate: 60` and falling back to the static
-`MENU` array if the fetch fails.
+Lets you mark things sold out and change prices from your phone, without
+touching code. **The site works fine without this** — skip it until you want it.
+
+Everything is already built. You just need a free Supabase project.
+
+### 7a. Create the project
+
+1. Sign up at <https://supabase.com> (free tier, no card)
+2. **New project** → name it `bellas-takoyaki` → pick a strong database
+   password → region **Southeast Asia (Singapore)** → **Create**
+3. Wait ~2 minutes while it provisions
+
+### 7b. Create the table
+
+1. In Supabase, open **SQL Editor** → **New query**
+2. Open [`supabase/schema.sql`](supabase/schema.sql) from this project, copy
+   **all** of it, paste it in
+3. Click **Run**. You should see "Success, no rows returned."
+
+This also switches on row-level security, so customers can read your prices but
+only you can change them. Don't skip it.
+
+### 7c. Create your staff account
+
+1. **Authentication** → **Users** → **Add user** → **Create new user**
+2. Enter your email and a password, and tick **Auto Confirm User**
+3. Then go to **Authentication** → **Sign In / Providers** and turn **off**
+   *"Allow new users to sign up"* — only you should ever have an account
+
+### 7d. Connect the site
+
+1. In Supabase: **Project Settings** → **Data API**
+2. Copy the **Project URL** and the **anon / public** key
+3. In this project, copy `.env.example` to a new file called **`.env.local`**
+4. Paste your two values in:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
+```
+
+5. Restart the dev server (`Ctrl+C`, then `npm run dev`)
+
+⚠️ Only ever use the **anon** key. The `service_role` key bypasses every
+security policy — it must never go in this file or anywhere near the browser.
+`.env.local` is gitignored, so your keys never reach GitHub.
+
+**On Vercel**, add the same two variables under
+Project → Settings → Environment Variables, then redeploy.
+
+### 7e. Load your menu in
+
+Go to **/admin**, sign in, and press **Sync from menu file**. That copies all
+your items from `lib/menu.ts` into the database. Do this once now, and again any
+time you add a new item in code.
+
+### Using it day to day
+
+- **Sold out?** Open `/admin` on your phone, tap the item's toggle. The card
+  greys out on the public site within 60 seconds.
+- **Price change?** Type the new number, hit **Save**.
+- **New item, new photo, new description?** Those still live in
+  `lib/menu.ts` — the database only holds availability and prices, so your copy
+  stays in version control where it belongs.
+
+### If Supabase ever goes down
+
+The public menu falls straight back to `lib/menu.ts`. Customers see the site
+normally, just without that day's sold-out marks. Checkout is unaffected — it
+never touched the database to begin with.
+
+---
+
+## Not built (yet)
+
+The `orders` table for logging checkouts. The original plan marked it optional
+and it needs a decision first: an order is only real once the customer actually
+sends the chat message, which happens outside the website, so a logged order
+isn't a confirmed sale. Worth doing as a rough demand signal — just say the
+word.

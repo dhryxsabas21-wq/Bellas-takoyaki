@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowLeft, Lock } from "lucide-react";
 import { BUSINESS } from "@/lib/business";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getUser } from "@/lib/supabase/server";
+import LoginForm from "./LoginForm";
+import SetupNotice from "./SetupNotice";
 
 export const metadata: Metadata = {
   title: "Staff sign in",
@@ -9,37 +14,45 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/**
- * Phase 1 stub. Phase 2 wires this to Supabase auth + Next.js middleware and
- * adds /admin for toggling availability and editing prices.
- */
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+
+  if (isSupabaseConfigured) {
+    const user = await getUser();
+    if (user) redirect(next ?? "/admin");
+  }
+
   return (
     <main className="flex min-h-dvh items-center justify-center bg-brand-950 px-4 py-16">
-      <div className="w-full max-w-sm rounded-3xl bg-cream p-8 text-center shadow-2xl">
-        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-600 text-white">
-          <Lock className="size-7" aria-hidden="true" />
-        </span>
-        <h1 className="mt-5 font-display text-2xl font-bold text-ink">
-          Staff sign in
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-ink/65">
-          Coming in Phase 2. For now, daily availability is set in{" "}
-          <code className="rounded bg-brand-50 px-1 py-0.5 text-brand-700">
-            lib/menu.ts
-          </code>{" "}
-          by switching an item&apos;s{" "}
-          <code className="rounded bg-brand-50 px-1 py-0.5 text-brand-700">
-            available
-          </code>{" "}
-          flag.
-        </p>
+      <div className="w-full max-w-sm rounded-3xl bg-cream p-8 shadow-2xl">
+        <div className="text-center">
+          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-600 text-white">
+            <Lock className="size-7" aria-hidden="true" />
+          </span>
+          <h1 className="mt-5 font-display text-2xl font-bold text-ink">
+            Staff sign in
+          </h1>
+          <p className="mt-2 text-sm text-ink/60">
+            {BUSINESS.name} — manage today&apos;s menu.
+          </p>
+        </div>
+
+        {isSupabaseConfigured ? (
+          <LoginForm next={next ?? "/admin"} />
+        ) : (
+          <SetupNotice />
+        )}
+
         <Link
           href="/"
-          className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-brand-600 px-6 text-sm font-bold text-white transition hover:bg-brand-700"
+          className="mt-6 flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-ink/50 transition hover:text-brand-600"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Back to {BUSINESS.shortName}
+          Back to the site
         </Link>
       </div>
     </main>

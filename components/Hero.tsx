@@ -4,19 +4,19 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, MessageCircleHeart } from "lucide-react";
 import FoodImage from "./FoodImage";
 import { BUSINESS } from "@/lib/business";
-import { MENU_STATS } from "@/lib/menu";
+import { MENU_STATS, type MenuStats } from "@/lib/menu";
 import { peso } from "@/lib/format";
 import { useUI } from "@/lib/ui";
 
-const STATS = [
-  { value: `${MENU_STATS.takoyakiFlavors}`, label: "Takoyaki flavours" },
-  { value: peso(MENU_STATS.startingPrice), label: "Starting price" },
-  { value: MENU_STATS.biggestTray, label: "Biggest barkada tray" },
-];
-
-export default function Hero() {
+export default function Hero({ stats = MENU_STATS }: { stats?: MenuStats }) {
   const openChat = useUI((s) => s.openChat);
   const reduced = useReducedMotion();
+
+  const STATS = [
+    { value: `${stats.takoyakiFlavors}`, label: "Takoyaki flavours" },
+    { value: peso(stats.startingPrice), label: "Starting price" },
+    { value: stats.biggestTray, label: "Biggest barkada tray" },
+  ];
 
   const rise = (delay: number) =>
     reduced

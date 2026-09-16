@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import FoodImage from "./FoodImage";
-import { MENU, startingPrice, type MenuItem } from "@/lib/menu";
+import { MENU, startingPrice, type Category, type MenuItem } from "@/lib/menu";
 import { peso } from "@/lib/format";
 import { useUI } from "@/lib/ui";
 import { HAS_WHATSAPP } from "@/lib/business";
 
-export default function MenuSection() {
-  const [activeId, setActiveId] = useState(MENU[0].id);
+export default function MenuSection({ menu = MENU }: { menu?: Category[] }) {
+  const [activeId, setActiveId] = useState(menu[0].id);
   const openItem = useUI((s) => s.openItem);
   const reduced = useReducedMotion();
 
-  const active = MENU.find((c) => c.id === activeId) ?? MENU[0];
+  const active = menu.find((c) => c.id === activeId) ?? menu[0];
 
   return (
     <section id="menu" className="bg-cream py-16 sm:py-24">
@@ -38,7 +38,7 @@ export default function MenuSection() {
           aria-label="Menu categories"
           className="no-scrollbar mt-9 -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:justify-center sm:px-0"
         >
-          {MENU.map((cat) => {
+          {menu.map((cat) => {
             const selected = cat.id === activeId;
             return (
               <button

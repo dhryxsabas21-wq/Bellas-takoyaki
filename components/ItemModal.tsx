@@ -4,25 +4,29 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Minus, Plus, X } from "lucide-react";
 import FoodImage from "./FoodImage";
-import { findItem } from "@/lib/menu";
+import { findItem, type Category, type MenuItem } from "@/lib/menu";
 import { peso } from "@/lib/format";
 import { useCart } from "@/lib/cart";
 import { useUI } from "@/lib/ui";
 import { useDialog } from "@/lib/dialog";
 
-export default function ItemModal() {
+export default function ItemModal({ menu }: { menu?: Category[] }) {
   const modalItemId = useUI((s) => s.modalItemId);
-  const item = modalItemId ? findItem(modalItemId) : undefined;
+  // Resolve against the live menu when the page passed one, so prices set in
+  // /admin are what the customer actually adds to their basket.
+  const lookup = menu?.flatMap((c) => c.items);
+  const item = modalItemId
+    ? (lookup?.find((i) => i.id === modalItemId) ?? findItem(modalItemId))
+    : undefined;
 
   return (
     <AnimatePresence>
-      {item && <ModalBody key={item.id} itemId={item.id} />}
+      {item && <ModalBody key={item.id} item={item} />}
     </AnimatePresence>
   );
 }
 
-function ModalBody({ itemId }: { itemId: string }) {
-  const item = findItem(itemId)!;
+function ModalBody({ item }: { item: MenuItem }) {
   const closeItem = useUI((s) => s.closeItem);
   const pulseBadge = useUI((s) => s.pulseBadge);
   const showToast = useUI((s) => s.showToast);
