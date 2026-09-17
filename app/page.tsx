@@ -15,11 +15,18 @@ import { getMenu } from "@/lib/menu-server";
 import { computeStats, marqueeWords } from "@/lib/menu";
 
 /**
- * Re-fetch live availability and prices at most once a minute. If Supabase
- * isn't set up or the fetch fails, getMenu() returns the static MENU and the
- * page renders exactly as it did in Phase 1.
+ * How long a cached menu may be served before it's rebuilt.
+ *
+ * Toggling an item in /admin calls revalidatePath("/"), so staff changes show
+ * up immediately. This window only bounds how stale the menu can get if the
+ * database is edited some other way — 10s means a customer can never be more
+ * than ten seconds behind on a sold-out item, while still capping the database
+ * at ~6 queries a minute no matter how much traffic a Facebook post brings.
+ *
+ * If Supabase is unset or the fetch fails, getMenu() falls back to the static
+ * MENU and the page renders exactly as it did in Phase 1.
  */
-export const revalidate = 60;
+export const revalidate = 10;
 
 export default async function HomePage() {
   const menu = await getMenu();
