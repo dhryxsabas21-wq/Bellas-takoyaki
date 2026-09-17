@@ -82,7 +82,7 @@ export const MENU: Category[] = [
         description:
           "Sweet-savoury teriyaki chicken with a slow chilli burn that builds around the third ball.",
         basePrice: 100,
-        image: "/images/spicy-chicken-teriyaki.webp",
+        image: "", // no photo yet — set to "/images/spicy-chicken-teriyaki.jpg" when you have one
         variants: [
           { id: "5pcs", label: "5 pcs", price: 100 },
           { id: "8pcs", label: "8 pcs", price: 160 },
@@ -96,7 +96,7 @@ export const MENU: Category[] = [
         description:
           "Our extra-spicy signature. Not a dare — genuinely delicious, just bring a drink.",
         basePrice: 100,
-        image: "/images/chili-bomb.webp",
+        image: "", // no photo yet — set to "/images/chili-bomb.jpg" when you have one
         variants: [
           { id: "5pcs", label: "5 pcs", price: 100 },
           { id: "8pcs", label: "8 pcs", price: 160 },
@@ -110,7 +110,7 @@ export const MENU: Category[] = [
         description:
           "Seasoned beef, toasted garlic and melted cheese. Rich, buttery and unapologetically heavy.",
         basePrice: 110,
-        image: "/images/cheesy-garlic-beef.webp",
+        image: "", // no photo yet — set to "/images/cheesy-garlic-beef.jpg" when you have one
         variants: [
           // CHECK: ₱110 matches the ladder (175 ÷ 1.6) and mirrors Tuna Melt
           // exactly. Looks right.
@@ -126,7 +126,7 @@ export const MENU: Category[] = [
         description:
           "Tender seasoned chicken wrapped around a molten cheese centre. The lighter half of the Cheesebomb family.",
         basePrice: 125,
-        image: "/images/chicken-cheesebomb.webp",
+        image: "", // no photo yet — set to "/images/chicken-cheesebomb.jpg" when you have one
         variants: [
           { id: "5pcs", label: "5 pcs", price: 125 },
           { id: "8pcs", label: "8 pcs", price: 200 },
@@ -169,7 +169,7 @@ export const MENU: Category[] = [
         description:
           "Flaked tuna and cheese melted through the middle. Comfort food with a Japanese accent.",
         basePrice: 110,
-        image: "/images/tuna-melt.webp",
+        image: "", // no photo yet — set to "/images/tuna-melt.jpg" when you have one
         variants: [
           { id: "5pcs", label: "5 pcs", price: 110 },
           { id: "8pcs", label: "8 pcs", price: 175 },
@@ -183,7 +183,7 @@ export const MENU: Category[] = [
         description:
           "Whole baby octopus, our premium pick. Worth every peso and usually the first to sell out.",
         basePrice: 150,
-        image: "/images/baby-tako.webp",
+        image: "", // no photo yet — set to "/images/baby-tako.jpg" when you have one
         badge: "Bestseller",
         variants: [
           { id: "5pcs", label: "5 pcs", price: 150 },
@@ -226,7 +226,7 @@ export const MENU: Category[] = [
         description:
           "Hot crispy fries buried under octo takoyaki bits, sauce and mayo. Built for sharing, eaten alone.",
         basePrice: 160,
-        image: "/images/fries-octo.webp",
+        image: "", // no photo yet — set to "/images/fries-octo.jpg" when you have one
         available: true,
       },
       {
@@ -235,7 +235,7 @@ export const MENU: Category[] = [
         description:
           "Fries loaded with cheese takoyaki bits and a proper molten blanket on top.",
         basePrice: 175,
-        image: "/images/fries-cheese.webp",
+        image: "", // no photo yet — set to "/images/fries-cheese.jpg" when you have one
         available: true,
       },
       {
@@ -244,7 +244,7 @@ export const MENU: Category[] = [
         description:
           "Fries topped with seasoned chicken takoyaki bits. The safe order that never disappoints.",
         basePrice: 170,
-        image: "/images/fries-chicken.webp",
+        image: "", // no photo yet — set to "/images/fries-chicken.jpg" when you have one
         available: true,
       },
     ],
@@ -259,7 +259,7 @@ export const MENU: Category[] = [
         description:
           "Stir-fried yakisoba noodles tossed in sweet-savoury sauce, topped with octo takoyaki bits and bonito.",
         basePrice: 180,
-        image: "/images/yakisoba-octo.webp",
+        image: "", // no photo yet — set to "/images/yakisoba-octo.jpg" when you have one
         available: true,
       },
       {
@@ -268,7 +268,7 @@ export const MENU: Category[] = [
         description:
           "Our yakisoba under cheese takoyaki bits and a generous melt. A full meal in one box.",
         basePrice: 195,
-        image: "/images/yakisoba-cheese.webp",
+        image: "", // no photo yet — set to "/images/yakisoba-cheese.jpg" when you have one
         available: true,
       },
       {
@@ -277,7 +277,7 @@ export const MENU: Category[] = [
         description:
           "Yakisoba noodles with chicken takoyaki bits, spring onion and pickled ginger.",
         basePrice: 190,
-        image: "/images/yakisoba-chicken.webp",
+        image: "", // no photo yet — set to "/images/yakisoba-chicken.jpg" when you have one
         available: true,
       },
     ],
@@ -292,7 +292,7 @@ export const MENU: Category[] = [
         description:
           "The Japanese pancake done properly — cabbage, octobits and bacon griddled together, then crosshatched with sauce and mayo.",
         basePrice: 180,
-        image: "/images/okonomiyaki.webp",
+        image: "", // no photo yet — set to "/images/okonomiyaki.jpg" when you have one
         badge: "New",
         addOns: [
           { id: "mozzarella", label: "Add Mozzarella", price: 40 },

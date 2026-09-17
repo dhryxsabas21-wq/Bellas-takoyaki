@@ -66,7 +66,9 @@ export default function FoodImage({
     });
   }
 
-  if (failed) {
+  // An empty src means "no photo supplied yet" — show the placeholder straight
+  // away rather than firing a request that can only 404 (and retrying it).
+  if (!src || failed) {
     return (
       <div
         role="img"
