@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Minus, Plus, X } from "lucide-react";
 import FoodImage from "./FoodImage";
 import { findItem, type Category, type MenuItem } from "@/lib/menu";
+import { isAvailable, useAvailability } from "@/lib/availability";
 import { peso } from "@/lib/format";
 import { useCart } from "@/lib/cart";
 import { useUI } from "@/lib/ui";
@@ -12,11 +13,19 @@ import { useDialog } from "@/lib/dialog";
 
 export default function ItemModal({ menu }: { menu?: Category[] }) {
   const modalItemId = useUI((s) => s.modalItemId);
+  const overrides = useAvailability((s) => s.overrides);
+
   // Resolve against the live menu when the page passed one, so prices set in
   // /admin are what the customer actually adds to their basket.
   const lookup = menu?.flatMap((c) => c.items);
-  const item = modalItemId
+  const found = modalItemId
     ? (lookup?.find((i) => i.id === modalItemId) ?? findItem(modalItemId))
+    : undefined;
+
+  // Apply live availability — an item can sell out between the page loading
+  // and the customer opening it.
+  const item = found
+    ? { ...found, available: isAvailable(found, overrides) }
     : undefined;
 
   return (
@@ -78,6 +87,12 @@ function ModalBody({ item }: { item: MenuItem }) {
 
   function handleAdd() {
     if (needsOption) return;
+    // Last line of defence: if it sold out while this modal was open, refuse.
+    if (!item.available) {
+      showToast(`Sorry — ${item.name} just sold out.`);
+      closeItem();
+      return;
+    }
     // Chosen add-ons ride along in `options` so they show in the cart line and
     // in the order message you receive.
     const detail = [...picked, ...chosenAddOns.map((a) => a.label)];
@@ -312,11 +327,13 @@ function ModalBody({ item }: { item: MenuItem }) {
           <button
             type="button"
             onClick={handleAdd}
-            disabled={needsOption}
+            disabled={needsOption || !item.available}
             className="flex min-h-13 w-full items-center justify-between rounded-full bg-brand-600 px-6 text-base font-bold text-white transition hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-ink/25 disabled:active:scale-100"
           >
-            <span>Add to Order</span>
-            <span className="font-display">{peso(lineTotal)}</span>
+            <span>{item.available ? "Add to Order" : "Sold out today"}</span>
+            {item.available && (
+              <span className="font-display">{peso(lineTotal)}</span>
+            )}
           </button>
         </div>
       </motion.div>

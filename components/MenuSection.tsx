@@ -1,19 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import FoodImage from "./FoodImage";
 import { MENU, startingPrice, type Category, type MenuItem } from "@/lib/menu";
 import { peso } from "@/lib/format";
 import { useUI } from "@/lib/ui";
 import { HAS_WHATSAPP } from "@/lib/business";
+import { applyAvailability, useAvailability } from "@/lib/availability";
 
 export default function MenuSection({ menu = MENU }: { menu?: Category[] }) {
   const [activeId, setActiveId] = useState(menu[0].id);
   const openItem = useUI((s) => s.openItem);
   const reduced = useReducedMotion();
 
-  const active = menu.find((c) => c.id === activeId) ?? menu[0];
+  // Live sold-out state wins over whatever the cached HTML was built with.
+  const overrides = useAvailability((s) => s.overrides);
+  const liveMenu = useMemo(
+    () => applyAvailability(menu, overrides),
+    [menu, overrides]
+  );
+
+  const active = liveMenu.find((c) => c.id === activeId) ?? liveMenu[0];
 
   return (
     <section id="menu" className="bg-cream py-16 sm:py-24">
@@ -38,7 +46,7 @@ export default function MenuSection({ menu = MENU }: { menu?: Category[] }) {
           aria-label="Menu categories"
           className="no-scrollbar mt-9 -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:justify-center sm:px-0"
         >
-          {menu.map((cat) => {
+          {liveMenu.map((cat) => {
             const selected = cat.id === activeId;
             return (
               <button

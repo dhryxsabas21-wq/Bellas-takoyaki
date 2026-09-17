@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { MENU, type Category } from "@/lib/menu";
+import { applyAvailability, useAvailability } from "@/lib/availability";
 import { peso } from "@/lib/format";
 import { useUI } from "@/lib/ui";
 import { useDialog } from "@/lib/dialog";
@@ -30,20 +31,21 @@ function DrawerBody({ menu }: { menu?: Category[] }) {
 
   const panelRef = useRef<HTMLDivElement>(null);
   useDialog(panelRef, true, closeCart);
+  const overrides = useAvailability((s) => s.overrides);
 
   const deps = { showToast, setManualCopy };
 
   // An item can sell out after it's already in someone's basket. Check every
   // line against the live menu so we never send you an order you can't cook.
   const soldOutIds = useMemo(() => {
-    const source = menu ?? MENU;
+    const source = applyAvailability(menu ?? MENU, overrides);
     return new Set(
       source
         .flatMap((c) => c.items)
         .filter((i) => !i.available)
         .map((i) => i.id)
     );
-  }, [menu]);
+  }, [menu, overrides]);
 
   const soldOutLines = lines.filter((l) => soldOutIds.has(l.itemId));
   const orderable = lines.filter((l) => !soldOutIds.has(l.itemId));

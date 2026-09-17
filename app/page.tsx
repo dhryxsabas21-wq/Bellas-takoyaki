@@ -1,3 +1,4 @@
+import AvailabilitySync from "@/components/AvailabilitySync";
 import CartDrawer from "@/components/CartDrawer";
 import ChatWidget from "@/components/ChatWidget";
 import Contact from "@/components/Contact";
@@ -52,6 +53,9 @@ export default async function HomePage() {
       <CartDrawer menu={menu} />
       <ChatWidget stats={stats} />
       <Toaster />
+
+      {/* Keeps sold-out state correct even when the page HTML is cached. */}
+      <AvailabilitySync />
     </>
   );
 }
