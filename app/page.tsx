@@ -42,7 +42,7 @@ export default async function HomePage() {
 
       {/* Overlays */}
       <ItemModal menu={menu} />
-      <CartDrawer />
+      <CartDrawer menu={menu} />
       <ChatWidget stats={stats} />
       <Toaster />
     </>

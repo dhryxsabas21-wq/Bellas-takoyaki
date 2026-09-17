@@ -1,27 +1,29 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
-import { selectTotal, useCart } from "@/lib/cart";
+import { AlertTriangle, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { useCart } from "@/lib/cart";
+import { MENU, type Category } from "@/lib/menu";
 import { peso } from "@/lib/format";
 import { useUI } from "@/lib/ui";
 import { useDialog } from "@/lib/dialog";
 import { checkoutMessenger, checkoutWhatsApp } from "@/lib/order";
 import { HAS_WHATSAPP } from "@/lib/business";
 
-export default function CartDrawer() {
+export default function CartDrawer({ menu }: { menu?: Category[] }) {
   const cartOpen = useUI((s) => s.cartOpen);
-  return <AnimatePresence>{cartOpen && <DrawerBody />}</AnimatePresence>;
+  return (
+    <AnimatePresence>{cartOpen && <DrawerBody menu={menu} />}</AnimatePresence>
+  );
 }
 
-function DrawerBody() {
+function DrawerBody({ menu }: { menu?: Category[] }) {
   const closeCart = useUI((s) => s.closeCart);
   const showToast = useUI((s) => s.showToast);
   const setManualCopy = useUI((s) => s.setManualCopy);
 
   const lines = useCart((s) => s.lines);
-  const total = useCart(selectTotal);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
   const clear = useCart((s) => s.clear);
@@ -30,6 +32,25 @@ function DrawerBody() {
   useDialog(panelRef, true, closeCart);
 
   const deps = { showToast, setManualCopy };
+
+  // An item can sell out after it's already in someone's basket. Check every
+  // line against the live menu so we never send you an order you can't cook.
+  const soldOutIds = useMemo(() => {
+    const source = menu ?? MENU;
+    return new Set(
+      source
+        .flatMap((c) => c.items)
+        .filter((i) => !i.available)
+        .map((i) => i.id)
+    );
+  }, [menu]);
+
+  const soldOutLines = lines.filter((l) => soldOutIds.has(l.itemId));
+  const orderable = lines.filter((l) => !soldOutIds.has(l.itemId));
+
+  // Total counts only what we can actually make.
+  const total = orderable.reduce((n, l) => n + l.qty * l.unitPrice, 0);
+  const blocked = soldOutLines.length > 0;
 
   return (
     <div className="fixed inset-0 z-[60] flex justify-end">
@@ -95,11 +116,22 @@ function DrawerBody() {
         ) : (
           <>
             <ul className="flex-1 divide-y divide-brand-100 overflow-y-auto px-5">
-              {lines.map((line) => (
-                <li key={line.key} className="py-4">
+              {lines.map((line) => {
+                const soldOut = soldOutIds.has(line.itemId);
+                return (
+                <li
+                  key={line.key}
+                  className={`py-4 ${soldOut ? "opacity-70" : ""}`}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-semibold text-ink">{line.name}</p>
+                      {soldOut && (
+                        <p className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-brand-100 px-2.5 py-1 text-xs font-bold text-brand-700">
+                          <AlertTriangle className="size-3.5" aria-hidden="true" />
+                          Sold out — remove to continue
+                        </p>
+                      )}
                       {(line.variant || line.options?.length) && (
                         <p className="mt-0.5 text-xs text-ink/55">
                           {[line.variant, line.options?.join(", ")]
@@ -148,7 +180,8 @@ function DrawerBody() {
                     </span>
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
 
             <footer className="border-t border-brand-100 bg-white px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
@@ -167,19 +200,36 @@ function DrawerBody() {
                 We&apos;ll confirm your total and timing in the chat before cooking.
               </p>
 
+              {blocked && (
+                <p
+                  role="alert"
+                  className="mt-3 flex items-start gap-2 rounded-2xl bg-brand-50 p-3 text-xs font-semibold text-brand-700"
+                >
+                  <AlertTriangle
+                    className="mt-0.5 size-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  {soldOutLines.length === 1
+                    ? "One item just sold out. Remove it to place your order."
+                    : `${soldOutLines.length} items just sold out. Remove them to place your order.`}
+                </p>
+              )}
+
               <div className="mt-4 grid gap-2">
                 <button
                   type="button"
-                  onClick={() => checkoutMessenger(lines, total, deps)}
-                  className="min-h-13 w-full rounded-full bg-[#0866FF] px-6 text-base font-bold text-white transition hover:brightness-110 active:scale-[0.98]"
+                  disabled={blocked}
+                  onClick={() => checkoutMessenger(orderable, total, deps)}
+                  className="min-h-13 w-full rounded-full bg-[#0866FF] px-6 text-base font-bold text-white transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-ink/25 disabled:active:scale-100"
                 >
                   Order via Messenger
                 </button>
                 {HAS_WHATSAPP && (
                   <button
                     type="button"
-                    onClick={() => checkoutWhatsApp(lines, total, deps)}
-                    className="min-h-13 w-full rounded-full bg-[#25D366] px-6 text-base font-bold text-white transition hover:brightness-110 active:scale-[0.98]"
+                    disabled={blocked}
+                    onClick={() => checkoutWhatsApp(orderable, total, deps)}
+                    className="min-h-13 w-full rounded-full bg-[#25D366] px-6 text-base font-bold text-white transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-ink/25 disabled:active:scale-100"
                   >
                     Order via WhatsApp
                   </button>

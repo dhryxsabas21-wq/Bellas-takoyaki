@@ -27,12 +27,11 @@ export const BUSINESS = {
   },
 
   /**
-   * FILL THIS IN (optional) — numeric Facebook Page ID or page username, for a
-   * direct m.me link. Find it at: Page → About → Page transparency → Page ID.
-   * Left empty, checkout falls back to the Facebook Page URL below, which
-   * works fine — the m.me link just opens the chat one tap sooner.
+   * Facebook Page username, taken from facebook.com/Bellastakoyaki.
+   * m.me accepts the username as well as the numeric Page ID, so checkout
+   * opens the chat thread directly instead of landing on the Page.
    */
-  messengerPageId: "",
+  messengerPageId: "Bellastakoyaki",
 
   facebookUrl: "https://www.facebook.com/Bellastakoyaki/",
 
