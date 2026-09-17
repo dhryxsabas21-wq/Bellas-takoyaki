@@ -1,7 +1,7 @@
 import "server-only";
 
 import { MENU, type Category, type MenuItem } from "./menu";
-import { createClient } from "./supabase/server";
+import { createPublicClient } from "./supabase/public";
 
 /**
  * One row per menu item. Only the fields staff can actually change live here —
@@ -51,7 +51,7 @@ function applyOverrides(menu: Category[], rows: ProductRow[]): Category[] {
  */
 export async function getMenu(): Promise<Category[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     if (!supabase) return MENU;
 
     const { data, error } = await supabase

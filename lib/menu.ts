@@ -50,7 +50,7 @@ export const MENU: Category[] = [
         description:
           "The classic. Real octopus and crisp vegetables folded into a molten centre, sauced and finished with dancing bonito flakes.",
         basePrice: 95,
-        image: "/images/octo-veggies.webp",
+        image: "/images/octo-veggies.jpg",
         variants: [
           // CHECK: ₱95 breaks the 5→8pc ladder every other item follows
           // (×1.6 would put it near ₱85). The 8pc and 16pc are consistent.
@@ -66,7 +66,7 @@ export const MENU: Category[] = [
         description:
           "Savoury pork and a molten cheese core that pulls when you bite. Buried under crispy floss — the one people come back for.",
         basePrice: 125,
-        image: "/images/pork-cheesebomb.webp",
+        image: "/images/pork-cheesebomb.jpg",
         badge: "Bestseller",
         variants: [
           // CHECK: ₱125 matches the ladder exactly (200 ÷ 1.6). Looks right.
@@ -140,7 +140,7 @@ export const MENU: Category[] = [
         description:
           "Shrimp, crab stick and sweet corn on the griddle, crowned with ikura, nori and sesame. Our proudest plate.",
         basePrice: 135,
-        image: "/images/ikura-seafood.webp",
+        image: "/images/ikura-seafood.jpg",
         badge: "Bestseller",
         variants: [
           { id: "5pcs", label: "5 pcs", price: 135 },
@@ -155,7 +155,7 @@ export const MENU: Category[] = [
         description:
           "Pepperoni and cheese in a takoyaki shell — pizza night, rolled into a ball.",
         basePrice: 125,
-        image: "/images/pepperoni-cheese.webp",
+        image: "/images/pepperoni-cheese.jpg",
         variants: [
           { id: "5pcs", label: "5 pcs", price: 125 },
           { id: "8pcs", label: "8 pcs", price: 200 },
@@ -204,7 +204,7 @@ export const MENU: Category[] = [
         description:
           "Takoyaki off the ball and onto the stick — grilled, sauced and stacked. Pick from our three bestsellers.",
         basePrice: 200,
-        image: "/images/san-yaki.webp",
+        image: "/images/san-yaki.jpg",
         variants: [
           { id: "12pcs", label: "12 pcs", price: 200 },
           { id: "24pcs", label: "24 pcs", price: 400 },

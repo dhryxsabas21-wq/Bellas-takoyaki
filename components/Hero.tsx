@@ -30,8 +30,8 @@ export default function Hero({ stats = MENU_STATS }: { stats?: MenuStats }) {
   return (
     <section id="top" className="relative isolate overflow-hidden">
       <FoodImage
-        src="/images/hero.webp"
-        alt="A tray of freshly griddled takoyaki topped with sauce and bonito flakes"
+        src="/images/hero.jpg"
+        alt="Two plates of Bella's takoyaki with sauce and crispy floss, served with iced lemonade"
         width={1600}
         height={1100}
         priority

@@ -95,6 +95,34 @@ export async function syncFromCode(): Promise<ActionResult> {
   return { ok: true, message: `Synced ${rows.length} items from the menu file.` };
 }
 
+/**
+ * Force the public site to rebuild its menu from the database right now.
+ *
+ * Toggling availability already calls revalidatePath, so this is a safety net:
+ * if a customer ever reports seeing an old price or a sold-out item still on
+ * the menu, one tap here guarantees a fresh page for everyone.
+ */
+export async function pushToCustomers(): Promise<ActionResult> {
+  const supabase = await requireStaff();
+  if (!supabase) return { ok: false, message: "Not signed in." };
+
+  // Confirm the database is actually reachable before claiming success —
+  // otherwise we'd tell staff it worked when the menu never reloaded.
+  const { count, error } = await supabase
+    .from("products")
+    .select("id", { count: "exact", head: true });
+
+  if (error) return { ok: false, message: `Database error: ${error.message}` };
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+
+  return {
+    ok: true,
+    message: `Live menu refreshed — ${count ?? 0} items pushed to customers.`,
+  };
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase?.auth.signOut();

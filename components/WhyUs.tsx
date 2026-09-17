@@ -61,8 +61,8 @@ export default function WhyUs() {
           <Reveal delay={0.1}>
             <figure className="relative overflow-hidden rounded-3xl bg-brand-50">
               <FoodImage
-                src="/images/why-us.webp"
-                alt="Bella's griddle mid-service, rows of takoyaki being turned with picks"
+                src="/images/why-us.jpg"
+                alt="Boxes of takoyaki lined up on the prep counter mid-service, loaded with bonito flakes"
                 width={900}
                 height={1100}
                 sizes="(max-width: 1024px) 100vw, 480px"

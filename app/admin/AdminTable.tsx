@@ -1,16 +1,22 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, RefreshCw, Save, X } from "lucide-react";
+import { Check, RefreshCw, Save, Send, X } from "lucide-react";
 import type { Category, MenuItem } from "@/lib/menu";
 import { peso } from "@/lib/format";
-import { setAvailability, setPrices, syncFromCode } from "./actions";
+import {
+  pushToCustomers,
+  setAvailability,
+  setPrices,
+  syncFromCode,
+} from "./actions";
 
 export default function AdminTable({ menu }: { menu: Category[] }) {
   const [toast, setToast] = useState<{ ok: boolean; message: string } | null>(
     null
   );
   const [syncing, startSync] = useTransition();
+  const [pushing, startPush] = useTransition();
 
   function flash(result: { ok: boolean; message: string }) {
     setToast(result);
@@ -21,20 +27,35 @@ export default function AdminTable({ menu }: { menu: Category[] }) {
     <div className="mt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-white/60">
-          Toggle an item off and it greys out on the site within a minute.
+          Toggle an item off and it greys out on the customer&apos;s menu right
+          away.
         </p>
-        <button
-          type="button"
-          disabled={syncing}
-          onClick={() => startSync(async () => flash(await syncFromCode()))}
-          className="flex min-h-11 items-center gap-2 rounded-full bg-accent-500 px-5 text-sm font-bold text-brand-950 transition hover:bg-accent-400 disabled:opacity-60"
-        >
-          <RefreshCw
-            className={`size-4 ${syncing ? "animate-spin" : ""}`}
-            aria-hidden="true"
-          />
-          {syncing ? "Syncing…" : "Sync from menu file"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={pushing}
+            onClick={() => startPush(async () => flash(await pushToCustomers()))}
+            className="flex min-h-11 items-center gap-2 rounded-full bg-green-500 px-5 text-sm font-bold text-brand-950 transition hover:bg-green-400 disabled:opacity-60"
+          >
+            <Send
+              className={`size-4 ${pushing ? "animate-pulse" : ""}`}
+              aria-hidden="true"
+            />
+            {pushing ? "Pushing…" : "Push to customers now"}
+          </button>
+          <button
+            type="button"
+            disabled={syncing}
+            onClick={() => startSync(async () => flash(await syncFromCode()))}
+            className="flex min-h-11 items-center gap-2 rounded-full bg-white/10 px-5 text-sm font-bold text-white transition hover:bg-white/20 disabled:opacity-60"
+          >
+            <RefreshCw
+              className={`size-4 ${syncing ? "animate-spin" : ""}`}
+              aria-hidden="true"
+            />
+            {syncing ? "Syncing…" : "Sync from menu file"}
+          </button>
+        </div>
       </div>
 
       {toast && (
