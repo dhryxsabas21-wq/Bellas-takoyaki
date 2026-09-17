@@ -8,9 +8,12 @@ import { createPublicClient } from "@/lib/supabase/public";
  * SDK to every customer — importing it client-side added ~70 kB to the page,
  * which is real money on mobile data.
  *
- * Edge-cached for 5 seconds: a customer is never more than 5s behind on a
- * sold-out item, and the database sees at most ~12 requests a minute no matter
- * how much traffic arrives.
+ * Edge-cached for 2 seconds only. The response is ~500 bytes and the query is
+ * two columns across eighteen rows, so this is cheap — and the cache still
+ * caps the database at ~30 requests a minute however many people are browsing.
+ *
+ * Deliberately no stale-while-revalidate: serving one stale response to save a
+ * round trip is exactly what made sold-out items linger on the menu.
  */
 export const dynamic = "force-dynamic";
 
@@ -33,9 +36,7 @@ export async function GET() {
     return NextResponse.json(
       Object.fromEntries(data.map((r) => [r.id as string, Boolean(r.available)])),
       {
-        headers: {
-          "Cache-Control": "public, s-maxage=5, stale-while-revalidate=10",
-        },
+        headers: { "Cache-Control": "public, s-maxage=2" },
       }
     );
   } catch {

@@ -5,7 +5,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { productRowsFromCode } from "@/lib/menu-server";
 
-export type ActionResult = { ok: boolean; message: string };
+export type ActionResult = {
+  ok: boolean;
+  message: string;
+  /** What the database actually holds after the write. */
+  available?: boolean;
+};
 
 /**
  * Every action re-checks the session server-side. Middleware protects the
@@ -28,18 +33,35 @@ export async function setAvailability(
   const supabase = await requireStaff();
   if (!supabase) return { ok: false, message: "Not signed in." };
 
-  const { error } = await supabase
+  // Read the row back so the UI reflects what was actually stored, not what we
+  // hoped was stored. A silent no-op (wrong id, RLS block) is otherwise
+  // indistinguishable from success, which is how a toggle appears to "not work".
+  const { data, error } = await supabase
     .from("products")
     .update({ available })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id, available");
 
   if (error) return { ok: false, message: error.message };
 
+  if (!data?.length) {
+    return {
+      ok: false,
+      message: `"${id}" isn't in the database. Press "Sync from menu file".`,
+    };
+  }
+
+  const saved = Boolean(data[0].available);
+
   revalidatePath("/");
   revalidatePath("/admin");
+
   return {
     ok: true,
-    message: available ? "Back on the menu." : "Marked sold out.",
+    available: saved,
+    message: saved
+      ? "Back on the menu — customers can order it again."
+      : "Marked sold out — customers can't order it now.",
   };
 }
 

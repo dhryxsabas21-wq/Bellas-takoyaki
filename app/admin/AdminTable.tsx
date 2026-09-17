@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Check, RefreshCw, Save, Send, X } from "lucide-react";
 import type { Category, MenuItem } from "@/lib/menu";
 import { peso } from "@/lib/format";
@@ -58,6 +58,8 @@ export default function AdminTable({ menu }: { menu: Category[] }) {
         </div>
       </div>
 
+      <CustomerView menu={menu} />
+
       {toast && (
         <p
           role="status"
@@ -89,6 +91,46 @@ export default function AdminTable({ menu }: { menu: Category[] }) {
   );
 }
 
+/**
+ * Mirrors exactly what the public menu is showing right now, straight from the
+ * database. Removes the guesswork about whether a toggle actually landed.
+ */
+function CustomerView({ menu }: { menu: Category[] }) {
+  const soldOut = menu.flatMap((c) => c.items).filter((i) => !i.available);
+
+  return (
+    <div
+      className={`mt-4 rounded-2xl p-4 ring-1 ${
+        soldOut.length
+          ? "bg-brand-500/15 ring-brand-400/40"
+          : "bg-green-500/10 ring-green-500/30"
+      }`}
+    >
+      <p className="text-xs font-bold tracking-[0.18em] text-white/50 uppercase">
+        What customers see right now
+      </p>
+      {soldOut.length === 0 ? (
+        <p className="mt-1 text-sm font-semibold text-green-200">
+          Everything is available — nothing is marked sold out.
+        </p>
+      ) : (
+        <>
+          <p className="mt-1 text-sm font-semibold text-brand-100">
+            {soldOut.length} {soldOut.length === 1 ? "item" : "items"} sold out
+            and not orderable:
+          </p>
+          <p className="mt-1 text-sm text-white/70">
+            {soldOut.map((i) => i.name).join(" · ")}
+          </p>
+        </>
+      )}
+      <p className="mt-2 text-xs text-white/40">
+        Reload this page to re-read the database.
+      </p>
+    </div>
+  );
+}
+
 function ItemRow({
   item,
   onResult,
@@ -97,6 +139,13 @@ function ItemRow({
   onResult: (r: { ok: boolean; message: string }) => void;
 }) {
   const [available, setAvail] = useState(item.available);
+
+  // Re-sync whenever the server sends fresh data (after a revalidate, or a
+  // reload). Without this the toggle can drift from the database and you end
+  // up clicking it back to where it started.
+  useEffect(() => {
+    setAvail(item.available);
+  }, [item.available]);
   const [basePrice, setBasePrice] = useState(String(item.basePrice));
   const [variantPrices, setVariantPrices] = useState<Record<string, string>>(
     Object.fromEntries((item.variants ?? []).map((v) => [v.id, String(v.price)]))
@@ -111,10 +160,12 @@ function ItemRow({
 
   function toggle() {
     const next = !available;
-    setAvail(next); // optimistic
+    setAvail(next); // optimistic — snaps back below if the database disagrees
     startTransition(async () => {
       const result = await setAvailability(item.id, next);
-      if (!result.ok) setAvail(!next);
+      // Trust the database over the optimistic guess.
+      if (typeof result.available === "boolean") setAvail(result.available);
+      else if (!result.ok) setAvail(!next);
       onResult(result);
     });
   }

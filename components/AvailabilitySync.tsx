@@ -3,10 +3,19 @@
 import { useEffect } from "react";
 import { useAvailability } from "@/lib/availability";
 
+/** How often to re-check while the customer is actually looking at the menu. */
+const POLL_MS = 6000;
+
 /**
- * Renders nothing. Pulls current sold-out state from /api/availability on load,
- * and again whenever the customer returns to the tab — so a basket left open
- * while they walked to the stall still reflects what's actually available.
+ * Renders nothing. Keeps sold-out state current in the customer's browser.
+ *
+ * Checks on load, every few seconds while the tab is visible, and again the
+ * moment they come back to it. So marking something sold out at the stall
+ * reaches someone already browsing the menu within a few seconds — they don't
+ * have to reload, and you don't have to press anything.
+ *
+ * Polling stops entirely while the tab is hidden, so a menu left open in a
+ * background tab costs nothing in battery or mobile data.
  *
  * Uses plain fetch rather than the Supabase SDK: importing the SDK here added
  * ~70 kB to every page load, and this needs exactly one tiny query.
@@ -20,6 +29,7 @@ export default function AvailabilitySync() {
 
   useEffect(() => {
     let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
 
     async function refresh() {
       try {
@@ -35,20 +45,37 @@ export default function AvailabilitySync() {
       }
     }
 
+    function startPolling() {
+      if (timer) return;
+      timer = setInterval(refresh, POLL_MS);
+    }
+
+    function stopPolling() {
+      if (!timer) return;
+      clearInterval(timer);
+      timer = null;
+    }
+
+    function onVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        refresh(); // catch up immediately, then resume the interval
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    }
+
     refresh();
+    if (document.visibilityState === "visible") startPolling();
 
-    const onFocus = () => refresh();
-    const onVisible = () => {
-      if (document.visibilityState === "visible") refresh();
-    };
-
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVisible);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", refresh);
 
     return () => {
       cancelled = true;
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVisible);
+      stopPolling();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", refresh);
     };
   }, [setOverrides]);
 
